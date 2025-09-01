@@ -6,15 +6,15 @@ import { getAnalytics, isSupported, type Analytics } from "firebase/analytics"
 
 // Your web app's Firebase configuration
 // Note: Firebase web config keys are not secrets. They can be safely exposed in the client per Firebase docs.
-// If you prefer, move these values to NEXT_PUBLIC_* environment variables.
+// Prefer reading from NEXT_PUBLIC_* environment variables so the same code works across environments.
 const firebaseConfig = {
-  apiKey: "AIzaSyDT-PtpyIs7gzfXIIDJ3xc2kZakYUID2YM",
-  authDomain: "akintec-e85aa.firebaseapp.com",
-  projectId: "akintec-e85aa",
-  storageBucket: "akintec-e85aa.firebasestorage.app",
-  messagingSenderId: "80719610531",
-  appId: "1:80719610531:web:dac10334255a335a8e7516",
-  measurementId: "G-YD8V1LC9K6",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyDT-PtpyIs7gzfXIIDJ3xc2kZakYUID2YM",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "akintec-e85aa.firebaseapp.com",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "akintec-e85aa",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "akintec-e85aa.firebasestorage.app",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "80719610531",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:80719610531:web:dac10334255a335a8e7516",
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-YD8V1LC9K6",
 }
 
 let _app: FirebaseApp | null = null
