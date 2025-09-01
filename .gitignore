@@ -24,4 +24,7 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.tsakintec-e85aa-firebase-adminsdk-fbsvc-705aa4cfc1.json
+next-env.d.ts
+
+# Firebase Admin service account files (never commit these)
+*-firebase-adminsdk-*.json
