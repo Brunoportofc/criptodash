@@ -19,7 +19,12 @@ export async function GET(req: NextRequest) {
 
       const send = (event: any) => {
         if (closed) return
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`))
+        try {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`))
+        } catch (error) {
+          console.error(`Stream send error for ${symbol}:`, error)
+          closed = true
+        }
       }
 
       // Pull from our cached REST endpoint (which tem TTL curto)
@@ -43,13 +48,25 @@ export async function GET(req: NextRequest) {
       tick()
 
       const heartbeat = setInterval(() => {
-        if (!closed) controller.enqueue(encoder.encode(`: ping\n\n`))
+        if (!closed) {
+          try {
+            controller.enqueue(encoder.encode(`: ping\n\n`))
+          } catch (error) {
+            console.error(`Heartbeat error for ${symbol}:`, error)
+            closed = true
+          }
+        }
       }, 15000)
 
       return () => {
         closed = true
         clearInterval(interval)
         clearInterval(heartbeat)
+        try {
+          controller.close()
+        } catch (error) {
+          // Controller já pode estar fechado
+        }
       }
     },
   })

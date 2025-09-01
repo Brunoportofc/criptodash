@@ -23,7 +23,7 @@ import { useToast } from "@/hooks/use-toast"
 import MexcSetupWizard from "./components/mexc-setup-wizard"
 import { RealTimeOrderBook } from "./components/real-time-orderbook"
 import { RealTimeTrades } from "./components/real-time-trades"
-import AdvancedPriceChart from "./components/advanced-price-chart"
+import RealTimePriceChart from "./components/real-time-price-chart"
 import { ProfileSettingsModal } from "./components/profile-settings-modal"
 
 interface MexcAccount {
@@ -635,7 +635,7 @@ export default function MEXCAGDDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Price Chart */}
               <div className="lg:col-span-2">
-                <AdvancedPriceChart symbol={selectedSymbol} />
+                <RealTimePriceChart symbol={selectedSymbol} />
               </div>
 
               {/* WebSocket Debug Panel removido - usando API REST */}
