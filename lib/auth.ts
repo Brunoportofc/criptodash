@@ -1,50 +1,64 @@
 import type { NextAuthOptions } from "next-auth"
-import GoogleProvider from "next-auth/providers/google"
+import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "./prisma"
+import { verifyFirebaseIdToken } from "@/lib/firebase-admin"
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-  ],
-  callbacks: {
-    async signIn({ user, account, profile }) {
-      if (account?.provider === "google") {
+    CredentialsProvider({
+      name: "firebase",
+      credentials: {
+        idToken: { label: "Firebase ID Token", type: "text" },
+      },
+      async authorize(credentials) {
         try {
-          // Check if user exists
-          const existingUser = await prisma.user.findUnique({
-            where: { email: user.email! },
-          })
+          const idToken = credentials?.idToken as string | undefined
+          if (!idToken) return null
 
-          if (!existingUser) {
-            // Create new user
-            await prisma.user.create({
+          const decoded = await verifyFirebaseIdToken(idToken)
+          const email = decoded.email
+          const name = decoded.name || decoded.email?.split("@")[0] || "Usuário"
+          const image = decoded.picture || undefined
+
+          if (!email) return null
+
+          // Ensure user exists in DB
+          let user = await prisma.user.findUnique({ where: { email } })
+          if (!user) {
+            user = await prisma.user.create({
               data: {
-                email: user.email!,
-                name: user.name!,
-                image: user.image,
+                email,
+                name,
+                image,
                 has2FA: false,
               },
             })
           }
-          return true
-        } catch (error) {
-          console.error("Sign in error:", error)
-          return false
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name || name,
+            image: user.image || image,
+          }
+        } catch (e) {
+          console.error("Firebase credentials authorize error:", e)
+          return null
         }
-      }
+      },
+    }),
+  ],
+  callbacks: {
+    async signIn() {
+      // Para credentials (Firebase), o tratamento do usuário é feito em authorize
       return true
     },
-    async session({ session, token }) {
+    async session({ session }) {
       if (session.user?.email) {
-        const user = await prisma.user.findUnique({
-          where: { email: session.user.email },
-        })
+        const user = await prisma.user.findUnique({ where: { email: session.user.email } })
         if (user) {
-          session.user.id = user.id
-          session.user.has2FA = user.has2FA
+          ;(session.user as any).id = user.id
+          ;(session.user as any).has2FA = user.has2FA
         }
       }
       return session

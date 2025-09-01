@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { SessionProvider, useSession, signOut } from "next-auth/react"
+import { initFirebase } from "@/lib/firebase"
 
 interface User {
   id: string
@@ -26,6 +27,13 @@ function AuthProviderInner({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const { data: session, status } = useSession()
   const isLoading = status === "loading"
+
+  useEffect(() => {
+    // Initialize Firebase on the client, analytics optional
+    if (typeof window !== "undefined") {
+      initFirebase().catch((e) => console.warn("Firebase init failed:", e?.message || e))
+    }
+  }, [])
 
   useEffect(() => {
     if (session?.user) {
